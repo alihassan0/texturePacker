@@ -1,6 +1,6 @@
 from os import listdir
 from os.path import isfile, join
-from util import crop,stamp, Frame, dumper
+from util import crop,stamp, Frame, dumper, getRegion
 
 import cv2
 import numpy as np
@@ -15,8 +15,22 @@ fileNames = [f for f in listdir(path) if isfile(join(path, f))]
 #load all images in a dict
 for fileName in fileNames:
     img = cv2.imread(path+'/'+fileName, cv2.IMREAD_UNCHANGED)
-    frame = Frame(fileName, img)
-    jsonObject['frames'].append(frame)
+    horizontalFramesCount = 1
+    verticalFramesCount = 1
+    animationName = fileName
+    if "_" in fileName:
+        fileNameRaw = fileName.split(".")[0]
+        ext = fileName.split(".")[1]
+        animationName = fileNameRaw.split("_")[0]
+        horizontalFramesCount = int(fileNameRaw.split("_")[1])
+        verticalFramesCount = int(fileNameRaw.split("_")[2])
+
+    for i in range(0,horizontalFramesCount) :
+        for j in range(0,verticalFramesCount) :
+            index = j*i + i
+            indexStrengified = str(index).zfill(3)
+            frame = Frame(animationName + indexStrengified , getRegion(img, index, horizontalFramesCount, verticalFramesCount))
+            jsonObject['frames'].append(frame)
 
 # #create Texture atlass images
 width = 512;
