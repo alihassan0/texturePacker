@@ -1,4 +1,5 @@
 from os import listdir
+import sys
 from os.path import isfile, join
 from util import crop,stamp, Frame, dumper, getRegion
 
@@ -6,7 +7,11 @@ import cv2
 import numpy as np
 import json
 
-path = "assets"
+
+path = sys.argv[1]
+carName = path.split('/')[-1]
+print carName
+
 jsonObject = {'frames':[],'meta':{}}
 
 #get fileNames
@@ -69,10 +74,10 @@ for frame in jsonObject['frames']:
 #     json.dumps(jsonObject, outfile, )
 
 import io, json
-with io.open('output/myTest.json', 'w', encoding='utf-8') as f:
+with io.open('output/'+carName+'.json', 'w', encoding='utf-8') as f:
   f.write(unicode(json.dumps(jsonObject, default=dumper, indent=4, sort_keys=True, ensure_ascii=False)))
 
-cv2.imwrite("output/myTest.png", img)
+cv2.imwrite("output/"+carName+".png", img)
 
 cv2.imshow("opencv",img)
 cv2.waitKey(0)
