@@ -1,8 +1,7 @@
-from os import listdir
+from os import listdir,makedirs
 import sys
-from os.path import isfile, join
+from os.path import isfile, join, isdir,abspath
 from util import crop,stamp, Frame, dumper, getRegion
-
 import numpy as np
 import json
 import Image
@@ -69,13 +68,21 @@ for frame in jsonObject['frames']:
     lastX += w
     
 
-# with open('output/output.json', 'w') as outfile:
-#     json.dumps(jsonObject, outfile, )
+# create output directory if it's not there 
+# 
+outputPath = abspath(join(path,'../../atlasses/'+carName+'/'));
+print(outputPath)
+try: 
+    makedirs(outputPath)
+except OSError:
+    if not isdir(outputPath):
+        raise
 
 import io, json
-with io.open('output/'+carName+'.json', 'w', encoding='utf-8') as f:
+print(outputPath+carName+'.json')
+with io.open(outputPath+'/'+carName+'.json', 'w', encoding='utf-8') as f:
   f.write(unicode(json.dumps(jsonObject, default=dumper, indent=4, sort_keys=True, ensure_ascii=False)))
 
 imgObj = Image.fromarray(img)
-imgObj.save("output/"+carName+".png")
+imgObj.save(outputPath+'/'+carName+".png")
 imgObj.show()
