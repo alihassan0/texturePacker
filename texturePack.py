@@ -3,10 +3,9 @@ import sys
 from os.path import isfile, join
 from util import crop,stamp, Frame, dumper, getRegion
 
-import cv2
 import numpy as np
 import json
-
+import Image
 
 path = sys.argv[1]
 carName = path.split('/')[-1]
@@ -19,7 +18,7 @@ fileNames = [f for f in listdir(path) if isfile(join(path, f))]
 
 #load all images in a dict
 for fileName in fileNames:
-    img = cv2.imread(path+'/'+fileName, cv2.IMREAD_UNCHANGED)
+    img = np.array(Image.open(path+'/'+fileName))
     horizontalFramesCount = 1
     verticalFramesCount = 1
     animationName = fileName
@@ -77,7 +76,6 @@ import io, json
 with io.open('output/'+carName+'.json', 'w', encoding='utf-8') as f:
   f.write(unicode(json.dumps(jsonObject, default=dumper, indent=4, sort_keys=True, ensure_ascii=False)))
 
-cv2.imwrite("output/"+carName+".png", img)
-
-cv2.imshow("opencv",img)
-cv2.waitKey(0)
+imgObj = Image.fromarray(img)
+imgObj.save("output/"+carName+".png")
+imgObj.show()
