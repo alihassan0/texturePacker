@@ -6,13 +6,12 @@ import numpy as np
 import json
 import Image
 
-path = sys.argv[1]
-carName = path.split('/')[-1]
-print carName
 
 
 
-def loadImagesInDirectory(path, fileNames):
+
+def loadImagesInDirectory(path):
+    fileNames = [f for f in listdir(path) if isfile(join(path, f))]
     jsonObject = {'frames':[],'meta':{}}
     #load all images in a dict
     for fileName in fileNames:
@@ -53,7 +52,6 @@ def loadImagesInDirectory(path, fileNames):
         frame.img = crop(frame.img, cX1 , cY1, cX2+1 , cY2+1)
         
         h,w,c = frame.img.shape
-        print lastX, lastY, maxHeightInRow, h, w, c
         if lastX + w >= 512 :
             lastY += maxHeightInRow
             lastX = 0
@@ -69,27 +67,35 @@ def loadImagesInDirectory(path, fileNames):
     return img,jsonObject
     
 
-# create output directory if it's not there 
-# 
+def writeFilesInDirectory (img,jsonObject, outputPath, fileName): 
+    # create output directory if it's not there 
+    try: 
+        makedirs(outputPath)
+    except OSError:
+        if not isdir(outputPath):
+            raise
+    # write output files
+    import io, json
+    with io.open(outputPath+"/"+fileName+'.json', 'w', encoding='utf-8') as f:
+        f.write(unicode(json.dumps(jsonObject, default=dumper, indent=4, sort_keys=True, ensure_ascii=False)))
 
-#get fileNames
-fileNames = [f for f in listdir(path) if isfile(join(path, f))]
-print(fileNames)
-img,jsonObject = loadImagesInDirectory(path, fileNames)
+    imgObj = Image.fromarray(img)
+    imgObj.save(outputPath+"/"+fileName+".png")
 
-outputPath = abspath(join(path,'../../atlasses/'+carName+'/'));
-try: 
-    makedirs(outputPath)
-except OSError:
-    if not isdir(outputPath):
-        raise
+path = sys.argv[1]
+outputPath = sys.argv[2]
 
-import io, json
-print(outputPath+carName+'.json')
-with io.open(outputPath+"/"+carName+'.json', 'w', encoding='utf-8') as f:
-  f.write(unicode(json.dumps(jsonObject, default=dumper, indent=4, sort_keys=True, ensure_ascii=False)))
+for f in listdir(path):
+    if isfile(join(path, f)):
+        print(path);
+        img,jsonObject = loadImagesInDirectory(path)
+        writeFilesInDirectory(img, jsonObject, outputPath, f)
+    else:
+        print(join(outputPath, f));
+        img,jsonObject = loadImagesInDirectory(join(path, f))
+        writeFilesInDirectory(img, jsonObject, outputPath, f)
 
-imgObj = Image.fromarray(img)
-imgObj.save(outputPath+"/"+carName+".png")
-imgObj.show()
+ 
+##show output file
+# imgObj.show()
 
